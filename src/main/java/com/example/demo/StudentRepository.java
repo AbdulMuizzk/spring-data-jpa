@@ -20,6 +20,6 @@ public interface StudentRepository extends JpaRepository <Student, Long> {
 
     @Transactional
     @Modifying
-    int deleteStudentById(Long id);
+    void deleteStudentById(Long id);
 
 }
