@@ -13,7 +13,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Optional<Book> findByStudentId(Long studentId);
 
-    Optional<Book> findBookByBookName(String bookName);
 
     @Transactional
     @Modifying
