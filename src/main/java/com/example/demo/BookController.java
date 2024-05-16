@@ -47,5 +47,18 @@ public class BookController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+    @PatchMapping("/update-book")
+    public ResponseEntity<Book> updateBook(@RequestParam Long bookId, @RequestParam Long studentId, @RequestBody Book book) {
+        if (studentId == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        Optional<Student> student = studentService.getStudentById(studentId);
+        if (student.isPresent()) {
+            Optional<Book> updatedBook = bookService.updateBook(bookId, studentId, book);
+            return updatedBook.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        } else {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
 
 }

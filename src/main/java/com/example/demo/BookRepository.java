@@ -13,8 +13,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Optional<Book> findByStudentId(Long studentId);
 
+    Optional<Book> findBookByBookName(String bookName);
+
     @Transactional
     @Modifying
     @Query("DELETE FROM student_books b WHERE b.student.id  = :id")
     void deleteBookByStdId(@Param("id") Long studentId);
+
+
 }
