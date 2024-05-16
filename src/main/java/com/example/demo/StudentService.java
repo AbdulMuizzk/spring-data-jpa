@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -17,9 +18,19 @@ public class StudentService {
 
     private final StudentIdCardService studentIdCardService;
 
-    public Optional<Student> getStudentsByEmail(String email) {
-        return studentRepository.findByEmail(email);
+    public Optional<Student> getStudentById(Long studentId) {
+        return studentRepository.findById(studentId);
     }
+    public Optional<?> getStudentByEmail(String email) {
+        Optional<Student> student = studentRepository.findByEmail(email);
+        if (student.isPresent()) {
+            return student;
+        } else {
+            System.out.println("Student with email " + email + " not found");
+            return Optional.empty();
+        }
+    }
+
 
     public List<Student> selectStudentWhereFirstNameAndAgeGreaterOrEqual(
             @Param("firstName") String firstName,
@@ -27,8 +38,8 @@ public class StudentService {
         return studentRepository.selectStudentWhereFirstNameAndAgeGreaterOrEqual(firstName, age);
     }
 
-    public int deleteStudentById(@Param("id") Long id) {
-        return studentRepository.deleteStudentById(id);
+    public void deleteStudentById(@Param("id") Long id) {
+        studentRepository.deleteStudentById(id);
     }
 
     @Transactional(rollbackOn = Exception.class)
@@ -52,6 +63,14 @@ public class StudentService {
         } else {
             return Optional.empty();
         }
+    }
+
+    @Transactional(rollbackOn = Exception.class)
+    public List<Student> insertMultipleStudents(@Param("students") List<Student> students) {
+        log.info("Inserting Multiple Students: {}", students);
+        List <Student> newStudents = studentRepository.saveAll(students);
+        newStudents.forEach(studentIdCardService::generateStudentIdCard);
+        return newStudents;
     }
 
     public boolean studentExistsById(@NonNull Long id) {

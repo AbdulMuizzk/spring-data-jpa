@@ -12,5 +12,5 @@ public interface StudentIdCardRepository extends CrudRepository<StudentIdCard, L
 
     @Transactional
     @Modifying
-    int deleteStudentIdCardByStudentId(Long studentId);
+    void deleteStudentIdCardByStudentId(Long studentId);
 }

@@ -2,15 +2,14 @@ package com.example.demo;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.query.Param;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class StudentIdCardService {
 
@@ -27,6 +26,7 @@ public class StudentIdCardService {
         return sb.toString();
     }
     public StudentIdCard generateStudentIdCard (Student student) {
+        log.info("Generating a Student Id Card for the following Student: {}", student);
         StudentIdCard studentIdCard = new StudentIdCard();
         studentIdCard.setCardNumber(this.randomIdGenerator());
         studentIdCard.setStudent(student);
@@ -36,8 +36,8 @@ public class StudentIdCardService {
         return studentIdCardRepository.findByStudentId(studentId);
     }
 
-    public int deleteStudentIdCardByStudentId(@NonNull Long studentId) {
-        return studentIdCardRepository.deleteStudentIdCardByStudentId(studentId);
+    public void deleteStudentIdCardByStudentId(@NonNull Long studentId) {
+        studentIdCardRepository.deleteStudentIdCardByStudentId(studentId);
     }
 
     public boolean existsStudentIdCardByStudentId (@Param("id") Long studentId) {

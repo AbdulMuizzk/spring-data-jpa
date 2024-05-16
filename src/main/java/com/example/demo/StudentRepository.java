@@ -15,7 +15,6 @@ public interface StudentRepository extends JpaRepository <Student, Long> {
 
     boolean existsById(@NonNull Long id);
 
-
     @Query("SELECT s FROM Student s WHERE LOWER(s.firstName) = LOWER(:firstName) AND s.age >= :age")
     List<Student> selectStudentWhereFirstNameAndAgeGreaterOrEqual(String firstName, Integer age);
 

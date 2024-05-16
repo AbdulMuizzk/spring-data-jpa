@@ -23,14 +23,19 @@ public class StudentController {
     private final StudentIdCardService studentIdCardService;
 
     @GetMapping("/get-student-by-email")
-    public ResponseEntity<Student> getStudentsByEmail(@RequestParam(required = false) String email) {
+    public ResponseEntity<?> getStudentsByEmail(@RequestParam(required = false) String email) {
         if (email == null || email.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
-        Optional<Student> student = studentService.getStudentsByEmail(email);
-        return student
-                .map(value -> ResponseEntity.ok(value))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        Optional<?> student = studentService.getStudentByEmail(email);
+        if (student.isPresent()) {
+            return student
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        }
+        else {
+            return ResponseEntity.notFound().build();
+        }
     }
     @GetMapping("/get-student-by-firstname-and-age")
     public ResponseEntity<List<Student>> selectStudentWhereFirstNameAndAgeGreaterOrEqual(@RequestParam(required = false) String firstName, @RequestParam(required = false) Integer age) {
@@ -56,8 +61,18 @@ public class StudentController {
         }
         Optional<Student> updatedStudent =  studentService.updateStudent(student, studentId);
         return updatedStudent
-                .map(value -> ResponseEntity.ok(value))
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("insert-multiple-students")
+    public ResponseEntity<List<Student>> insertMultipleStudents(@RequestBody List<Student> students) {
+        if (students == null || students.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        List<Student> studentsInserted = studentService.insertMultipleStudents(students);
+
+        return studentsInserted != null ? ResponseEntity.ok(studentsInserted) : ResponseEntity.badRequest().body(null);
     }
 
     @DeleteMapping
