@@ -1,9 +1,12 @@
 package com.example.demo.controllers;
 
 import com.example.demo.dtos.EnrolmentDto;
+import com.example.demo.dtos.StudentDto;
 import com.example.demo.entities.Enrolment;
 import com.example.demo.entities.Student;
+import com.example.demo.exceptions.*;
 import com.example.demo.mappers.EnrolmentMapper;
+import com.example.demo.mappers.StudentMapper;
 import com.example.demo.services.StudentIdCardService;
 import com.example.demo.services.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -27,62 +30,72 @@ public class StudentController {
 
     private final StudentIdCardService studentIdCardService;
     private final EnrolmentMapper enrolmentMapper;
+    private final StudentMapper studentMapper;
 
     @GetMapping("/get-student-by-email")
-    public ResponseEntity<Student> getStudentsByEmail(@RequestParam(required = false) String email) {
+    public ResponseEntity<StudentDto> getStudentsByEmail(@RequestParam(required = false) String email) throws StudentNotFoundException {
         if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
+            throw new IllegalArgumentException("Email cannot be null or empty");
         }
         Optional<Student> student = studentService.getStudentByEmail(email);
-        if (student.isPresent()) {
-            return student
-                    .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-        }
-        else {
-            return ResponseEntity.notFound().build();
-        }
+        return student
+                .map(value -> ResponseEntity.ok(studentMapper.toStudentDto(value)))
+                .orElseThrow(() -> new StudentNotFoundException("Student with email " + email + " not found"));
+
     }
     @GetMapping("/get-student-by-firstname-and-age")
-    public ResponseEntity<List<Student>> selectStudentWhereFirstNameAndAgeGreaterOrEqual(@RequestParam(required = false) String firstName, @RequestParam(required = false) Integer age) {
+    public ResponseEntity<List<StudentDto>> selectStudentWhereFirstNameAndAgeGreaterOrEqual(@RequestParam(required = false) String firstName, @RequestParam(required = false) Integer age) throws StudentNotFoundException {
         if ((firstName == null || firstName.isEmpty()) || (age == null) || (age < 0)) {
-            return ResponseEntity.badRequest().body(null);
+            throw new IllegalArgumentException("First name cannot be null or empty and age cannot be null or less than 0");
         }
         List<Student> studentsFound = studentService.selectStudentWhereFirstNameAndAgeGreaterOrEqual(firstName, age);
-        return ResponseEntity.ok(studentsFound);
+        if (studentsFound.isEmpty()) {
+            throw new StudentNotFoundException("No students found with first name " 
+                    + firstName + " and age greater or equal to " + age);
+        }
+        List<StudentDto> studentDtosList = studentsFound.stream()
+                .map(studentMapper::toStudentDto)
+                .toList();
+        return ResponseEntity.ok(studentDtosList);
     }
     @PostMapping
-    public ResponseEntity<Student> insertStudent(@RequestBody Student student) {
+    public ResponseEntity<StudentDto> insertStudent(@RequestBody Student student) throws StudentInsertionException {
         if (student == null) {
-           return ResponseEntity.badRequest().body(null);
+           throw new IllegalArgumentException("Student Object cannot be null");
         }
         Student std = studentService.insertStudent(student);
-        return std != null ? ResponseEntity.ok(std) : ResponseEntity.badRequest().body(null);
+        if (std != null) {
+            return ResponseEntity.ok(studentMapper.toStudentDto(std));
+        } else {
+            throw new StudentInsertionException("An error occurred while creating a student");
+        }
     }
 
     @PatchMapping
-    public ResponseEntity<Student> updateStudentDetails(@RequestParam Long studentId, @RequestBody Student student) {
-        if(student == null || studentId == null) {
-            return ResponseEntity.badRequest().body(null);
+    public ResponseEntity<StudentDto> updateStudentDetails(@RequestParam Long studentId, @RequestBody Student student) throws StudentUpdationException {
+        if (student == null || studentId == null) {
+            throw new IllegalArgumentException("Student object or student id cannot be null");
         }
         Optional<Student> updatedStudent =  studentService.updateStudent(student, studentId);
         return updatedStudent
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(value -> ResponseEntity.ok(studentMapper.toStudentDto(value)))
+                .orElseThrow(() -> new StudentUpdationException("An error occurred while updating student with id " + studentId));
     }
 
     @PostMapping("insert-multiple-students")
-    public ResponseEntity<List<Student>> insertMultipleStudents(@RequestBody List<Student> students) {
+    public ResponseEntity<List<StudentDto>> insertMultipleStudents(@RequestBody List<Student> students) throws StudentInsertionException {
         if (students == null || students.isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
+            throw new IllegalArgumentException("Students list cannot be null or empty");
         }
         List<Student> studentsInserted = studentService.insertMultipleStudents(students);
-
-        return studentsInserted != null ? ResponseEntity.ok(studentsInserted) : ResponseEntity.badRequest().body(null);
+        List<StudentDto> studentInsertedDto = studentsInserted.stream()
+                .map(studentMapper::toStudentDto)
+                .toList();
+        return ResponseEntity.ok(studentInsertedDto);
     }
 
     @DeleteMapping
-    public boolean deleteStudent(@RequestParam Long studentId) {
+    public boolean deleteStudent(@RequestParam Long studentId) throws StudentNotFoundException {
         boolean studentFound = studentService.studentExistsById(studentId);
         boolean studentIdCardFound = studentIdCardService.existsStudentIdCardByStudentId(studentId);
         if(studentFound && studentIdCardFound) {
@@ -90,29 +103,20 @@ public class StudentController {
             studentService.deleteStudentById(studentId);
             return true;
         } else {
-            return false;
+            throw new StudentNotFoundException("Student with id " + studentId + " not found");
         }
     }
 
     @PostMapping("/enroll-student")
-    public ResponseEntity<EnrolmentDto> enrollStudent(@RequestParam Long studentId, @RequestParam Long courseId) {
+    public ResponseEntity<EnrolmentDto> enrollStudent(@RequestParam Long studentId, @RequestParam Long courseId) throws StudentEnrolmentException {
         if (studentId == null || courseId == null) {
-            return ResponseEntity.badRequest().body(null);
+            throw new IllegalArgumentException("Student id or course id cannot be null");
         }
         Optional<Enrolment> newStudentEnrolment = studentService.enrollStudentToCourse(studentId, courseId);
         if(newStudentEnrolment.isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
+            throw new StudentEnrolmentException("An error occurred while enrolling student with id " + studentId + " to course with id " + courseId);
         }
         EnrolmentDto enrolmentDto = enrolmentMapper.toEnrolmentDto(newStudentEnrolment.get());
         return ResponseEntity.ok(enrolmentDto);
-    }
-
-    @GetMapping("/get-enrollments")
-    public ResponseEntity<List<EnrolmentDto>> getEnrolments() {
-        List<Enrolment> studentEnrolments = studentService.getEnrolments();
-        List<EnrolmentDto> enrolmentDtos = studentEnrolments.stream()
-                .map(enrolmentMapper::toEnrolmentDto)
-                .toList();
-        return ResponseEntity.ok(enrolmentDtos);
     }
 }
