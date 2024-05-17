@@ -23,7 +23,7 @@ public class Book {
             strategy = GenerationType.SEQUENCE,
             generator = "book_sequence"
     )
-    private Long Id;
+    private Long id;
 
 
     private String bookName;

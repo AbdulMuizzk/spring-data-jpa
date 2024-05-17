@@ -21,14 +21,8 @@ public class StudentService {
     public Optional<Student> getStudentById(Long studentId) {
         return studentRepository.findById(studentId);
     }
-    public Optional<?> getStudentByEmail(String email) {
-        Optional<Student> student = studentRepository.findByEmail(email);
-        if (student.isPresent()) {
-            return student;
-        } else {
-            System.out.println("Student with email " + email + " not found");
-            return Optional.empty();
-        }
+    public Optional<Student> getStudentByEmail(String email) {
+        return studentRepository.findByEmail(email);
     }
 
 

@@ -7,15 +7,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("students")
-@RequiredArgsConstructor()
-
 // Rest Compliant Any documentations
 // Student Resource -> get update put format of the URLS for any Rest Based entity
 // naming conventions of the URL should be changed
 // Rest Documentation compliant
 
+@RestController
+@RequestMapping("students")
+@RequiredArgsConstructor
 public class StudentController {
 
     private final StudentService studentService;
@@ -23,11 +22,11 @@ public class StudentController {
     private final StudentIdCardService studentIdCardService;
 
     @GetMapping("/get-student-by-email")
-    public ResponseEntity<?> getStudentsByEmail(@RequestParam(required = false) String email) {
+    public ResponseEntity<Student> getStudentsByEmail(@RequestParam(required = false) String email) {
         if (email == null || email.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
-        Optional<?> student = studentService.getStudentByEmail(email);
+        Optional<Student> student = studentService.getStudentByEmail(email);
         if (student.isPresent()) {
             return student
                     .map(ResponseEntity::ok)
