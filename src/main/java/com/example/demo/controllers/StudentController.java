@@ -6,7 +6,6 @@ import com.example.demo.entities.Student;
 import com.example.demo.mappers.EnrolmentMapper;
 import com.example.demo.services.StudentIdCardService;
 import com.example.demo.services.StudentService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,6 @@ public class StudentController {
     private final StudentService studentService;
 
     private final StudentIdCardService studentIdCardService;
-    private final ObjectMapper jacksonObjectMapper;
     private final EnrolmentMapper enrolmentMapper;
 
     @GetMapping("/get-student-by-email")

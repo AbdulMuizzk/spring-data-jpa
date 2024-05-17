@@ -39,7 +39,4 @@ public class Enrolment {
     public Long getStudentId(){
         return this.enrolmentId.getStudentId();
     }
-    public LocalDateTime getCreatedAt(){
-        return this.createdAt;
-    }
 }
