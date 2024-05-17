@@ -1,5 +1,9 @@
-package com.example.demo;
+package com.example.demo.controllers;
 
+import com.example.demo.entities.Book;
+import com.example.demo.services.BookService;
+import com.example.demo.entities.Student;
+import com.example.demo.services.StudentService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

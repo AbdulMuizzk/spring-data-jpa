@@ -1,5 +1,6 @@
-package com.example.demo;
+package com.example.demo.repositories;
 
+import com.example.demo.entities.Student;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;

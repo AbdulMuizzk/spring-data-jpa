@@ -1,5 +1,12 @@
-package com.example.demo;
+package com.example.demo.controllers;
 
+import com.example.demo.dtos.EnrolmentDto;
+import com.example.demo.entities.Enrolment;
+import com.example.demo.entities.Student;
+import com.example.demo.mappers.EnrolmentMapper;
+import com.example.demo.services.StudentIdCardService;
+import com.example.demo.services.StudentService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +27,8 @@ public class StudentController {
     private final StudentService studentService;
 
     private final StudentIdCardService studentIdCardService;
+    private final ObjectMapper jacksonObjectMapper;
+    private final EnrolmentMapper enrolmentMapper;
 
     @GetMapping("/get-student-by-email")
     public ResponseEntity<Student> getStudentsByEmail(@RequestParam(required = false) String email) {
@@ -85,5 +94,27 @@ public class StudentController {
         } else {
             return false;
         }
+    }
+
+    @PostMapping("/enroll-student")
+    public ResponseEntity<EnrolmentDto> enrollStudent(@RequestParam Long studentId, @RequestParam Long courseId) {
+        if (studentId == null || courseId == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        Optional<Enrolment> newStudentEnrolment = studentService.enrollStudentToCourse(studentId, courseId);
+        if(newStudentEnrolment.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        EnrolmentDto enrolmentDto = enrolmentMapper.toEnrolmentDto(newStudentEnrolment.get());
+        return ResponseEntity.ok(enrolmentDto);
+    }
+
+    @GetMapping("/get-enrollments")
+    public ResponseEntity<List<EnrolmentDto>> getEnrolments() {
+        List<Enrolment> studentEnrolments = studentService.getEnrolments();
+        List<EnrolmentDto> enrolmentDtos = studentEnrolments.stream()
+                .map(enrolmentMapper::toEnrolmentDto)
+                .toList();
+        return ResponseEntity.ok(enrolmentDtos);
     }
 }

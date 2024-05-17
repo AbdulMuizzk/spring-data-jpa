@@ -1,5 +1,6 @@
-package com.example.demo;
+package com.example.demo.repositories;
 
+import com.example.demo.entities.StudentIdCard;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.CrudRepository;

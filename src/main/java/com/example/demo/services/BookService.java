@@ -1,5 +1,9 @@
-package com.example.demo;
+package com.example.demo.services;
 
+import com.example.demo.entities.Book;
+import com.example.demo.repositories.BookRepository;
+import com.example.demo.entities.Student;
+import com.example.demo.repositories.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

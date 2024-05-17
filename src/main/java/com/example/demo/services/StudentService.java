@@ -1,4 +1,8 @@
-package com.example.demo;
+package com.example.demo.services;
+import com.example.demo.entities.*;
+import com.example.demo.repositories.CourseRepository;
+import com.example.demo.repositories.EnrolmentRepository;
+import com.example.demo.repositories.StudentRepository;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,10 @@ public class StudentService {
     private final StudentRepository studentRepository;
 
     private final StudentIdCardService studentIdCardService;
+
+    private final CourseRepository courseRepository;
+
+    private final EnrolmentRepository enrolmentRepository;
 
     public Optional<Student> getStudentById(Long studentId) {
         return studentRepository.findById(studentId);
@@ -69,5 +77,28 @@ public class StudentService {
 
     public boolean studentExistsById(@NonNull Long id) {
         return studentRepository.existsById(id);
+    }
+
+    @Transactional
+    public Optional<Enrolment> enrollStudentToCourse(@NonNull Long studentId, @NonNull Long courseId) {
+            Optional<Course> course = courseRepository.findCourseById(courseId);
+            Optional<Student> student = studentRepository.findById(studentId);
+            if (course.isPresent() && student.isPresent()) {
+                EnrolmentId enrolmentId = new EnrolmentId();
+                enrolmentId.setStudentId(student.get().getId());
+                enrolmentId.setCourseId(course.get().getId());
+                Enrolment enrolment = new Enrolment();
+                enrolment.setEnrolmentId(enrolmentId);
+                enrolment.setStudent(student.get());
+                enrolment.setCourse(course.get());
+                Enrolment newEnrolment = enrolmentRepository.save(enrolment);
+                return Optional.of(newEnrolment);
+            } else {
+                return Optional.empty();
+            }
+    }
+
+    public List<Enrolment> getEnrolments() {
+        return enrolmentRepository.findAll();
     }
 }
