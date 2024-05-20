@@ -1,6 +1,5 @@
 package com.example.demo.services;
 import com.example.demo.entities.*;
-import com.example.demo.exceptions.StudentNotFoundException;
 import com.example.demo.repositories.CourseRepository;
 import com.example.demo.repositories.EnrolmentRepository;
 import com.example.demo.repositories.StudentRepository;
@@ -76,10 +75,6 @@ public class StudentService {
         List <Student> newStudents = studentRepository.saveAll(students);
         newStudents.forEach(studentIdCardService::generateStudentIdCard);
         return newStudents;
-    }
-
-    public boolean studentExistsById(@NonNull Long id) {
-        return studentRepository.existsById(id);
     }
 
     @Transactional

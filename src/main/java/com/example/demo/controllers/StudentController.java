@@ -7,10 +7,6 @@ import com.example.demo.entities.Student;
 import com.example.demo.exceptions.*;
 import com.example.demo.mappers.EnrolmentMapper;
 import com.example.demo.mappers.StudentMapper;
-import com.example.demo.repositories.EnrolmentRepository;
-import com.example.demo.services.BookService;
-import com.example.demo.services.EnrolmentService;
-import com.example.demo.services.StudentIdCardService;
 import com.example.demo.services.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,12 +26,8 @@ import java.util.Optional;
 public class StudentController {
 
     private final StudentService studentService;
-    private final StudentIdCardService studentIdCardService;
     private final EnrolmentMapper enrolmentMapper;
     private final StudentMapper studentMapper;
-    private final BookService bookService;
-    private final EnrolmentRepository enrolmentRepository;
-    private final EnrolmentService enrolmentService;
 
     @GetMapping("/{email}")
     public ResponseEntity<StudentDto> getStudentsByEmail(@PathVariable String email) throws StudentNotFoundException {
