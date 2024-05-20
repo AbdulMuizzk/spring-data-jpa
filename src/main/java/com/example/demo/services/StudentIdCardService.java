@@ -45,8 +45,4 @@ public class StudentIdCardService {
         studentIdCardRepository.deleteByStudentId(studentId);
     }
 
-    public boolean existsStudentIdCardByStudentId (@Param("id") Long studentId) {
-        return studentIdCardRepository.existsByStudentId(studentId);
-    }
-
 }
