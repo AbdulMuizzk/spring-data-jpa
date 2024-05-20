@@ -9,8 +9,6 @@ public interface StudentIdCardRepository extends JpaRepository<StudentIdCard, Lo
 
     StudentIdCard findByStudentId(Long studentId);
 
-    boolean existsByStudentId(Long studentId);
-
     @Modifying
     @Query("DELETE FROM StudentIdCard s WHERE s.student.id = :studentId")
     void deleteByStudentId(Long studentId);
