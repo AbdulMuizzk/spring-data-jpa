@@ -1,5 +1,6 @@
 package com.example.demo.services;
 import com.example.demo.entities.*;
+import com.example.demo.exceptions.StudentNotFoundException;
 import com.example.demo.repositories.CourseRepository;
 import com.example.demo.repositories.EnrolmentRepository;
 import com.example.demo.repositories.StudentRepository;
@@ -25,6 +26,8 @@ public class StudentService {
     private final CourseRepository courseRepository;
 
     private final EnrolmentRepository enrolmentRepository;
+    private final BookService bookService;
+    private final EnrolmentService enrolmentService;
 
     public Optional<Student> getStudentById(Long studentId) {
         return studentRepository.findById(studentId);
@@ -100,5 +103,14 @@ public class StudentService {
 
     public List<Enrolment> getEnrolments() {
         return enrolmentRepository.findAll();
+    }
+
+    @Transactional
+    public void deleteByIdAndDetails(Long studentId) {
+        bookService.deleteBookByStudentId(studentId);
+        enrolmentService.deleteEnrolmentByStudentId(studentId);
+        studentIdCardService.deleteStudentIdCardByStudentId(studentId);
+        this.deleteStudentById(studentId);
+
     }
 }

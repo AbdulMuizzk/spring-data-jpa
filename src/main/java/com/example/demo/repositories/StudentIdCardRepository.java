@@ -1,17 +1,17 @@
 package com.example.demo.repositories;
 
 import com.example.demo.entities.StudentIdCard;
-import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.Query;
 
-public interface StudentIdCardRepository extends CrudRepository<StudentIdCard, Long> {
+public interface StudentIdCardRepository extends JpaRepository<StudentIdCard, Long> {
 
     StudentIdCard findByStudentId(Long studentId);
 
     boolean existsByStudentId(Long studentId);
 
-    @Transactional
     @Modifying
-    void deleteStudentIdCardByStudentId(Long studentId);
+    @Query("DELETE FROM StudentIdCard s WHERE s.student.id = :studentId")
+    void deleteByStudentId(Long studentId);
 }

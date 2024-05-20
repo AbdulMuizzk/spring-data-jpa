@@ -4,7 +4,7 @@ import com.example.demo.entities.Book;
 import com.example.demo.services.BookService;
 import com.example.demo.entities.Student;
 import com.example.demo.services.StudentService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,37 +13,35 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("books")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BookController {
     private final BookService bookService;
     private final StudentService studentService;
 
-    @GetMapping("/find-all")
-    public List<Book> getBooks() {
-        return bookService.findAll();
+    @GetMapping
+    public ResponseEntity<List<Book>> getBooks(@RequestParam(required = false) Long studentId) {
+        if (studentId == null) {
+            return ResponseEntity.ok(bookService.findAll());
+        }
+        Optional<List<Book>> booksFound =  bookService.findBookByStudentId(studentId);
+        return booksFound.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
-    @GetMapping("/find-by-book-id")
-    public Book getBook(@RequestParam Long bookId) {
+
+    @GetMapping("/{bookId}")
+    public Book getBook(@PathVariable Long bookId) {
         return bookService.findById(bookId);
     }
-    @GetMapping("/find-by-student-id")
-    public ResponseEntity<Book> getBookByStudentId(@RequestParam Long studentId) {
-        if (studentId == null) {
+
+    @DeleteMapping("/{studentId}")
+    public void deleteBookByStudentId(@PathVariable Long studentId) {
+        bookService.deleteBookByStudentId(studentId);
+    }
+    @PostMapping
+    public ResponseEntity<Book> addNewBook(@RequestBody Book book) {
+        if (book.getStudent().getId() == null) {
             return ResponseEntity.badRequest().body(null);
         }
-        Optional<Book> bookFound =  bookService.findBookByStudentId(studentId);
-        return bookFound.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-    @DeleteMapping("/delete-book-by-student-id")
-    public boolean deleteBookByStudentId(@RequestParam Long studentId) {
-         return bookService.deleteBookByStudentId(studentId);
-    }
-    @PostMapping("/add-a-new-book")
-    public ResponseEntity<Book> addNewBook(@RequestBody Book book, @RequestParam Long studentId) {
-        if (studentId == null) {
-            return ResponseEntity.badRequest().body(null);
-        }
-        Optional<Student> student = studentService.getStudentById(studentId);
+        Optional<Student> student = studentService.getStudentById(book.getStudent().getId());
         if (student.isPresent()) {
             Optional<Book> newBook = bookService.addNewBook(book, student.get());
             return newBook.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
@@ -51,7 +49,7 @@ public class BookController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-    @PatchMapping("/update-book")
+    @PatchMapping
     public ResponseEntity<Book> updateBook(@RequestParam Long bookId, @RequestParam Long studentId, @RequestBody Book book) {
         if (studentId == null) {
             return ResponseEntity.badRequest().body(null);

@@ -7,6 +7,9 @@ import com.example.demo.entities.Student;
 import com.example.demo.exceptions.*;
 import com.example.demo.mappers.EnrolmentMapper;
 import com.example.demo.mappers.StudentMapper;
+import com.example.demo.repositories.EnrolmentRepository;
+import com.example.demo.services.BookService;
+import com.example.demo.services.EnrolmentService;
 import com.example.demo.services.StudentIdCardService;
 import com.example.demo.services.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +30,15 @@ import java.util.Optional;
 public class StudentController {
 
     private final StudentService studentService;
-
     private final StudentIdCardService studentIdCardService;
     private final EnrolmentMapper enrolmentMapper;
     private final StudentMapper studentMapper;
+    private final BookService bookService;
+    private final EnrolmentRepository enrolmentRepository;
+    private final EnrolmentService enrolmentService;
 
-    @GetMapping("/get-student-by-email")
-    public ResponseEntity<StudentDto> getStudentsByEmail(@RequestParam(required = false) String email) throws StudentNotFoundException {
+    @GetMapping("/{email}")
+    public ResponseEntity<StudentDto> getStudentsByEmail(@PathVariable String email) throws StudentNotFoundException {
         if (email == null || email.isEmpty()) {
             throw new IllegalArgumentException("Email cannot be null or empty");
         }
@@ -43,8 +48,8 @@ public class StudentController {
                 .orElseThrow(() -> new StudentNotFoundException("Student with email " + email + " not found"));
 
     }
-    @GetMapping("/get-student-by-firstname-and-age")
-    public ResponseEntity<List<StudentDto>> selectStudentWhereFirstNameAndAgeGreaterOrEqual(@RequestParam(required = false) String firstName, @RequestParam(required = false) Integer age) throws StudentNotFoundException {
+    @GetMapping
+    public ResponseEntity<List<StudentDto>> selectStudentWhereFirstNameAndAgeGreaterOrEqual(@RequestParam String firstName, @RequestParam Integer age) throws StudentNotFoundException {
         if ((firstName == null || firstName.isEmpty()) || (age == null) || (age < 0)) {
             throw new IllegalArgumentException("First name cannot be null or empty and age cannot be null or less than 0");
         }
@@ -72,17 +77,17 @@ public class StudentController {
     }
 
     @PatchMapping
-    public ResponseEntity<StudentDto> updateStudentDetails(@RequestParam Long studentId, @RequestBody Student student) throws StudentUpdationException {
-        if (student == null || studentId == null) {
+    public ResponseEntity<StudentDto> updateStudentDetails(@RequestBody Student student) throws StudentUpdationException {
+        if (student == null || student.getId() == null) {
             throw new IllegalArgumentException("Student object or student id cannot be null");
         }
-        Optional<Student> updatedStudent =  studentService.updateStudent(student, studentId);
+        Optional<Student> updatedStudent =  studentService.updateStudent(student, student.getId());
         return updatedStudent
                 .map(value -> ResponseEntity.ok(studentMapper.toStudentDto(value)))
-                .orElseThrow(() -> new StudentUpdationException("An error occurred while updating student with id " + studentId));
+                .orElseThrow(() -> new StudentUpdationException("An error occurred while updating student with id " + student.getId()));
     }
 
-    @PostMapping("insert-multiple-students")
+    @PostMapping("/bulk-insert")
     public ResponseEntity<List<StudentDto>> insertMultipleStudents(@RequestBody List<Student> students) throws StudentInsertionException {
         if (students == null || students.isEmpty()) {
             throw new IllegalArgumentException("Students list cannot be null or empty");
@@ -94,21 +99,16 @@ public class StudentController {
         return ResponseEntity.ok(studentInsertedDto);
     }
 
-    @DeleteMapping
-    public boolean deleteStudent(@RequestParam Long studentId) throws StudentNotFoundException {
-        boolean studentFound = studentService.studentExistsById(studentId);
-        boolean studentIdCardFound = studentIdCardService.existsStudentIdCardByStudentId(studentId);
-        if(studentFound && studentIdCardFound) {
-            studentIdCardService.deleteStudentIdCardByStudentId(studentId);
-            studentService.deleteStudentById(studentId);
-            return true;
-        } else {
-            throw new StudentNotFoundException("Student with id " + studentId + " not found");
+    @DeleteMapping("/{studentId}")
+    public void deleteStudent(@PathVariable Long studentId) throws StudentNotFoundException {
+        if (studentId == null) {
+            throw new IllegalArgumentException("Student id cannot be null");
         }
+        studentService.deleteByIdAndDetails(studentId);
     }
 
-    @PostMapping("/enroll-student")
-    public ResponseEntity<EnrolmentDto> enrollStudent(@RequestParam Long studentId, @RequestParam Long courseId) throws StudentEnrolmentException {
+    @PostMapping("/{studentId}/{courseId}/enroll")
+    public ResponseEntity<EnrolmentDto> enrollStudent(@PathVariable Long studentId, @PathVariable Long courseId) throws StudentEnrolmentException {
         if (studentId == null || courseId == null) {
             throw new IllegalArgumentException("Student id or course id cannot be null");
         }

@@ -2,13 +2,13 @@ package com.example.demo.controllers;
 
 import com.example.demo.entities.StudentIdCard;
 import com.example.demo.services.StudentIdCardService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("student-id-cards")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class StudentIdCardController {
     private final StudentIdCardService studentIdCardService;
     @GetMapping

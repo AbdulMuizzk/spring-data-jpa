@@ -1,7 +1,6 @@
 package com.example.demo.repositories;
 
 import com.example.demo.entities.Student;
-import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,8 +18,8 @@ public interface StudentRepository extends JpaRepository <Student, Long> {
     @Query("SELECT s FROM Student s WHERE LOWER(s.firstName) = LOWER(:firstName) AND s.age >= :age")
     List<Student> selectStudentWhereFirstNameAndAgeGreaterOrEqual(String firstName, Integer age);
 
-    @Transactional
     @Modifying
+    @Query("DELETE FROM Student s WHERE s.id = :id")
     void deleteStudentById(Long id);
 
 }

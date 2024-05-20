@@ -3,6 +3,7 @@ package com.example.demo.services;
 import com.example.demo.entities.Student;
 import com.example.demo.entities.StudentIdCard;
 import com.example.demo.repositories.StudentIdCardRepository;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,6 @@ import java.util.Random;
 public class StudentIdCardService {
 
     private final StudentIdCardRepository studentIdCardRepository;
-
     private final Random random = new Random();
 
 
@@ -40,8 +40,9 @@ public class StudentIdCardService {
         return studentIdCardRepository.findByStudentId(studentId);
     }
 
+    @Transactional
     public void deleteStudentIdCardByStudentId(@NonNull Long studentId) {
-        studentIdCardRepository.deleteStudentIdCardByStudentId(studentId);
+        studentIdCardRepository.deleteByStudentId(studentId);
     }
 
     public boolean existsStudentIdCardByStudentId (@Param("id") Long studentId) {

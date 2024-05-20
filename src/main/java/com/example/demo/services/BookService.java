@@ -4,6 +4,8 @@ import com.example.demo.entities.Book;
 import com.example.demo.repositories.BookRepository;
 import com.example.demo.entities.Student;
 import com.example.demo.repositories.StudentRepository;
+import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,21 +39,16 @@ public class BookService {
         return Optional.of(newBook);
     }
 
-    public boolean deleteBookByStudentId(Long studentId) {
-        if (studentId == null) {
-            return false;
-        }
-        else {
-            bookRepository.deleteBookByStdId(studentId);
-            return true;
-        }
+    @Transactional
+    public void deleteBookByStudentId(@NonNull Long studentId) {
+        bookRepository.deleteBookByStdId(studentId);
     }
 
-    public Optional<Book> findBookByStudentId(Long studentId) {
+    public Optional<List<Book>> findBookByStudentId(Long studentId) {
         if(studentId == null) {
             return Optional.empty();
         } else {
-            return bookRepository.findByStudentId(studentId);
+            return bookRepository.findByStudent_Id(studentId);
         }
     }
 
